@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chrome Homepage</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="toolbar">
+        <button id="togglePanel" type="button" class="tool-btn" title="Show clock and tasks" aria-expanded="false" aria-controls="homePanel">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path fill="currentColor" d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
+            </svg>
+        </button>
+        <button id="refreshBg" type="button" class="tool-btn" title="Change background">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2.02A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            </svg>
+        </button>
+        <button id="openTimer" type="button" class="tool-btn" title="Start timer">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path fill="currentColor" d="M15 1H9v2h6V1zm-3 4a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 16a7 7 0 1 1 0-14 7 7 0 0 1 0 14zm.5-12H11v7l5.25 3.15.75-1.23-4.5-2.67V9z"/>
+            </svg>
+        </button>
+    </div>
+
+    <div id="homePanel" class="overlay is-hidden" hidden>
+        <h1 id="clock"></h1>
+        <form id="searchForm" action="https://www.google.com/search" method="GET">
+            <input type="text" name="q" id="searchBox" placeholder="Search Google..." autocomplete="off" />
+        </form>
+        <div class="todoBox">
+            <h3>Todo List</h3>
+            <input id="todoInput" placeholder="Add task and press Enter">
+            <ul id="todoList"></ul>
+        </div>
+        <div class="timerBox">
+            <h3>Timer</h3>
+            <div id="timerPreview" class="timer-preview">00:00:00</div>
+            <button id="timerStartPanel" type="button" class="timer-start-btn">Start</button>
+        </div>
+    </div>
+    <div id="weather" class="weather-box">Loading weather...</div>
+
+    <div id="timerOverlay" class="timer-overlay is-hidden" hidden>
+        <div class="timer-fs">
+            <p class="timer-fs-label">Timer</p>
+            <div id="timerDisplay" class="timer-fs-time">00:00:00</div>
+            <div class="timer-fs-actions">
+                <button id="timerPause" type="button">Pause</button>
+                <button id="timerReset" type="button">Reset</button>
+                <button id="timerExit" type="button">Exit</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
