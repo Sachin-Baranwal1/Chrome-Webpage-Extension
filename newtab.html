@@ -10,7 +10,7 @@
 <body>
 
     <div class="toolbar">
-        <button id="togglePanel" type="button" class="tool-btn" title="Show clock and tasks" aria-expanded="false" aria-controls="homePanel">
+        <button id="togglePanel" type="button" class="tool-btn" title="Show clock, notes and calendar" aria-expanded="false" aria-controls="workspace">
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
                 <path fill="currentColor" d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
             </svg>
@@ -27,21 +27,56 @@
         </button>
     </div>
 
-    <div id="homePanel" class="overlay is-hidden" hidden>
-        <h1 id="clock"></h1>
-        <form id="searchForm" action="https://www.google.com/search" method="GET">
-            <input type="text" name="q" id="searchBox" placeholder="Search Google..." autocomplete="off" />
-        </form>
-        <div class="todoBox">
-            <h3>Todo List</h3>
-            <input id="todoInput" placeholder="Add task and press Enter">
-            <ul id="todoList"></ul>
+    <div id="workspace" class="workspace is-hidden" hidden>
+        <div id="homePanel" class="overlay">
+            <h1 id="clock"></h1>
+            <form id="searchForm" action="https://www.google.com/search" method="GET">
+                <input type="text" name="q" id="searchBox" placeholder="Search Google..." autocomplete="off" />
+            </form>
+            <div class="todoBox">
+                <h3>Todo List</h3>
+                <input id="todoInput" placeholder="Add task and press Enter">
+                <ul id="todoList"></ul>
+            </div>
+            <div class="timerBox">
+                <h3>Timer</h3>
+                <div id="timerPreview" class="timer-preview">00:00:00</div>
+                <button id="timerStartPanel" type="button" class="timer-start-btn">Start</button>
+            </div>
         </div>
-        <div class="timerBox">
-            <h3>Timer</h3>
-            <div id="timerPreview" class="timer-preview">00:00:00</div>
-            <button id="timerStartPanel" type="button" class="timer-start-btn">Start</button>
-        </div>
+        <aside id="sideBoard" class="side-board">
+            <section class="notesBox">
+                <h3>Notes</h3>
+                <input id="notesInput" placeholder="Write a note and press Enter">
+                <ul id="notesList"></ul>
+            </section>
+            <section class="calendar-card">
+                <div class="cal-glow" aria-hidden="true"></div>
+                <div class="cal-header">
+                    <button id="calPrev" type="button" class="cal-nav" aria-label="Previous month">‹</button>
+                    <div class="cal-heading">
+                        <h3 id="calMonthLabel">Calendar</h3>
+                        <p class="cal-tagline">Festivals &amp; your events</p>
+                    </div>
+                    <button id="calNext" type="button" class="cal-nav" aria-label="Next month">›</button>
+                </div>
+                <div class="cal-weekdays" aria-hidden="true">
+                    <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                </div>
+                <div id="calGrid" class="cal-grid"></div>
+                <div class="cal-day-panel">
+                    <div class="cal-day-panel-head">
+                        <p id="calSelectedLabel">Select a day</p>
+                        <button id="calToday" type="button" class="cal-today-btn">Today</button>
+                    </div>
+                    <ul id="calEventList" class="cal-event-list"></ul>
+                    <form id="calEventForm" class="cal-event-form">
+                        <input id="calEventInput" type="text" placeholder="Add a festival or event" autocomplete="off">
+                        <button type="submit">Add</button>
+                    </form>
+                </div>
+            </section>
+        </aside>
     </div>
     <div id="weather" class="weather-box">Loading weather...</div>
 

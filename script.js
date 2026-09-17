@@ -116,13 +116,26 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderNotes() {
         if (!notesList) return
         notesList.innerHTML = ""
+        if (notes.length === 0) {
+            const empty = document.createElement("li")
+            empty.className = "empty-state"
+            empty.textContent = "No notes yet."
+            notesList.appendChild(empty)
+            return
+        }
         notes.forEach((note, index) => {
             const li = document.createElement("li")
-            li.textContent = note
-            li.addEventListener("click", () => {
+            const text = document.createElement("span")
+            text.textContent = note
+            const removeBtn = document.createElement("button")
+            removeBtn.type = "button"
+            removeBtn.textContent = "Delete"
+            removeBtn.addEventListener("click", () => {
                 notes.splice(index, 1)
                 saveNotes()
             })
+            li.appendChild(text)
+            li.appendChild(removeBtn)
             notesList.appendChild(li)
         })
     }
@@ -164,7 +177,10 @@ document.addEventListener("DOMContentLoaded", function () {
         "images/bg49.jpg", "images/bg50.jpg", "images/bg51.jpg", "images/bg52.jpg",
         "images/bg53.jpg", "images/bg54.jpg", "images/bg55.jpg", "images/bg56.jpg",
         "images/bg57.jpg", "images/bg58.jpg", "images/bg59.jpg", "images/bg60.jpg",
-        "images/bg61.jpg", "images/bg62.jpg"
+        "images/bg61.jpg", "images/bg62.jpg", "images/bg63.jpg", "images/bg64.jpg",
+        "images/bg65.jpg", "images/bg66.jpg", "images/bg67.jpg", "images/bg68.jpg",
+        "images/bg69.jpg", "images/bg70.jpg", "images/bg71.jpg", "images/bg72.jpg",
+        "images/bg73.jpg", "images/bg74.jpg",
     ]
 
     function applyBackground(index) {
@@ -207,16 +223,16 @@ document.addEventListener("DOMContentLoaded", function () {
         refreshBgBtn.addEventListener("click", refreshBackground)
     }
 
-    const homePanel = document.getElementById("homePanel")
+    const workspace = document.getElementById("workspace")
     const togglePanelBtn = document.getElementById("togglePanel")
 
     function setPanelOpen(open) {
-        if (!homePanel || !togglePanelBtn) return
-        homePanel.classList.toggle("is-hidden", !open)
-        homePanel.hidden = !open
+        if (!workspace || !togglePanelBtn) return
+        workspace.classList.toggle("is-hidden", !open)
+        workspace.hidden = !open
         togglePanelBtn.classList.toggle("is-active", open)
         togglePanelBtn.setAttribute("aria-expanded", open ? "true" : "false")
-        togglePanelBtn.title = open ? "Hide clock and tasks" : "Show clock and tasks"
+        togglePanelBtn.title = open ? "Hide clock, notes and calendar" : "Show clock, notes and calendar"
         localStorage.setItem("panelOpen", open ? "1" : "0")
     }
 
@@ -224,9 +240,192 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (togglePanelBtn) {
         togglePanelBtn.addEventListener("click", function () {
-            setPanelOpen(homePanel && homePanel.hidden)
+            setPanelOpen(workspace && workspace.hidden)
         })
     }
+
+    // CALENDAR
+    const calGrid = document.getElementById("calGrid")
+    const calMonthLabel = document.getElementById("calMonthLabel")
+    const calSelectedLabel = document.getElementById("calSelectedLabel")
+    const calEventList = document.getElementById("calEventList")
+    const calEventForm = document.getElementById("calEventForm")
+    const calEventInput = document.getElementById("calEventInput")
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    let calView = new Date()
+    calView.setDate(1)
+    let selectedDate = toDateKey(new Date())
+    let customEvents = {}
+    try {
+        customEvents = JSON.parse(localStorage.getItem("calendarEvents") || "{}")
+        if (!customEvents || typeof customEvents !== "object" || Array.isArray(customEvents)) customEvents = {}
+    } catch {
+        customEvents = {}
+    }
+
+    function toDateKey(date) {
+        const y = date.getFullYear()
+        const m = String(date.getMonth() + 1).padStart(2, "0")
+        const d = String(date.getDate()).padStart(2, "0")
+        return y + "-" + m + "-" + d
+    }
+
+    function parseDateKey(key) {
+        const parts = String(key).split("-").map(Number)
+        return new Date(parts[0], parts[1] - 1, parts[2])
+    }
+
+    function festivalMap(year) {
+        const map = {}
+        function add(month, day, title) {
+            const key = year + "-" + String(month).padStart(2, "0") + "-" + String(day).padStart(2, "0")
+            if (!map[key]) map[key] = []
+            map[key].push(title)
+        }
+        add(1, 1, "New Year")
+        add(1, 14, "Makar Sankranti")
+        add(1, 26, "Republic Day")
+        add(8, 15, "Independence Day")
+        add(10, 2, "Gandhi Jayanti")
+        add(12, 25, "Christmas")
+        const yearly = {
+            2026: [[2, 17, "Maha Shivaratri"], [3, 3, "Holi"], [8, 28, "Raksha Bandhan"], [9, 4, "Janmashtami"], [9, 14, "Ganesh Chaturthi"], [10, 21, "Dussehra"], [11, 8, "Diwali"]]
+        }
+            ; (yearly[year] || []).forEach(function (item) {
+                add(item[0], item[1], item[2])
+            })
+        return map
+    }
+
+    function eventsFor(key) {
+        const date = parseDateKey(key)
+        const festivals = (festivalMap(date.getFullYear())[key] || []).map(function (title) {
+            return { title: title, kind: "festival", removable: false }
+        })
+        const custom = (Array.isArray(customEvents[key]) ? customEvents[key] : []).map(function (title, index) {
+            return { title: title, kind: "event", removable: true, index: index }
+        })
+        return festivals.concat(custom)
+    }
+
+    function saveCustomEvents() {
+        localStorage.setItem("calendarEvents", JSON.stringify(customEvents))
+        renderCalendar()
+        renderSelectedDay()
+    }
+
+    function renderSelectedDay() {
+        if (!calEventList || !calSelectedLabel) return
+        const date = parseDateKey(selectedDate)
+        calSelectedLabel.textContent = date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })
+        const items = eventsFor(selectedDate)
+        calEventList.innerHTML = ""
+        if (items.length === 0) {
+            const empty = document.createElement("li")
+            empty.className = "empty-state"
+            empty.textContent = "No events on this day."
+            calEventList.appendChild(empty)
+            return
+        }
+        items.forEach(function (item) {
+            const li = document.createElement("li")
+            li.className = "cal-event-item"
+            const text = document.createElement("span")
+            const kind = document.createElement("em")
+            kind.className = "event-kind"
+            kind.textContent = item.kind
+            text.appendChild(kind)
+            text.appendChild(document.createTextNode(item.title))
+            li.appendChild(text)
+            if (item.removable) {
+                const removeBtn = document.createElement("button")
+                removeBtn.type = "button"
+                removeBtn.textContent = "Delete"
+                removeBtn.addEventListener("click", function () {
+                    customEvents[selectedDate].splice(item.index, 1)
+                    if (customEvents[selectedDate].length === 0) delete customEvents[selectedDate]
+                    saveCustomEvents()
+                })
+                li.appendChild(removeBtn)
+            }
+            calEventList.appendChild(li)
+        })
+    }
+
+    function renderCalendar() {
+        if (!calGrid || !calMonthLabel) return
+        const year = calView.getFullYear()
+        const month = calView.getMonth()
+        calMonthLabel.textContent = monthNames[month] + " " + year
+        const firstDay = new Date(year, month, 1).getDay()
+        const daysInMonth = new Date(year, month + 1, 0).getDate()
+        const todayKey = toDateKey(new Date())
+        const festivals = festivalMap(year)
+        calGrid.innerHTML = ""
+        for (let i = 0; i < firstDay; i++) {
+            const blank = document.createElement("div")
+            blank.className = "cal-day empty"
+            calGrid.appendChild(blank)
+        }
+        for (let day = 1; day <= daysInMonth; day++) {
+            const key = year + "-" + String(month + 1).padStart(2, "0") + "-" + String(day).padStart(2, "0")
+            const btn = document.createElement("button")
+            btn.type = "button"
+            btn.className = "cal-day"
+            btn.textContent = String(day)
+            if (key === todayKey) btn.classList.add("is-today")
+            if (key === selectedDate) btn.classList.add("is-selected")
+            const hasFestival = Boolean(festivals[key] && festivals[key].length)
+            const hasCustom = Boolean(customEvents[key] && customEvents[key].length)
+            if (hasFestival) btn.classList.add("has-festival", "has-event")
+            else if (hasCustom) btn.classList.add("has-event")
+            btn.addEventListener("click", function () {
+                selectedDate = key
+                renderCalendar()
+                renderSelectedDay()
+            })
+            calGrid.appendChild(btn)
+        }
+    }
+
+    const calPrev = document.getElementById("calPrev")
+    const calNext = document.getElementById("calNext")
+    const calToday = document.getElementById("calToday")
+    if (calPrev) {
+        calPrev.addEventListener("click", function () {
+            calView.setMonth(calView.getMonth() - 1)
+            renderCalendar()
+        })
+    }
+    if (calNext) {
+        calNext.addEventListener("click", function () {
+            calView.setMonth(calView.getMonth() + 1)
+            renderCalendar()
+        })
+    }
+    if (calToday) {
+        calToday.addEventListener("click", function () {
+            const now = new Date()
+            calView = new Date(now.getFullYear(), now.getMonth(), 1)
+            selectedDate = toDateKey(now)
+            renderCalendar()
+            renderSelectedDay()
+        })
+    }
+    if (calEventForm) {
+        calEventForm.addEventListener("submit", function (event) {
+            event.preventDefault()
+            if (!calEventInput) return
+            const value = calEventInput.value.trim()
+            if (!value) return
+            if (!Array.isArray(customEvents[selectedDate])) customEvents[selectedDate] = []
+            customEvents[selectedDate].push(value)
+            calEventInput.value = ""
+            saveCustomEvents()
+        })
+    }
+    renderCalendar()
+    renderSelectedDay()
 
     // TIMER
     const timerOverlay = document.getElementById("timerOverlay")
