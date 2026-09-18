@@ -9,14 +9,14 @@ document.addEventListener("DOMContentLoaded", function () {
     setInterval(updateClock, 1000)
 
     // SEARCH BAR
+    const searchForm = document.getElementById("searchForm")
     const searchBox = document.getElementById("searchBox")
-    if (searchBox) {
-        searchBox.addEventListener("keypress", function (e) {
-            if (e.key === "Enter") {
-                const query = searchBox.value.trim()
-                if (query) {
-                    window.location.href = "https://www.google.com/search?q=" + encodeURIComponent(query)
-                }
+    if (searchForm) {
+        searchForm.addEventListener("submit", function (e) {
+            e.preventDefault()
+            const query = searchBox ? searchBox.value.trim() : ""
+            if (query) {
+                window.location.href = "https://www.google.com/search?q=" + encodeURIComponent(query)
             }
         })
     }
@@ -161,30 +161,12 @@ document.addEventListener("DOMContentLoaded", function () {
     renderNotes()
 
     // BACKGROUND IMAGES
-    const backgrounds = [
-        "images/bg1.jpg", "images/bg2.jpg", "images/bg3.jpg", "images/bg4.jpg",
-        "images/bg5.jpg", "images/bg6.jpg", "images/bg7.jpg", "images/bg8.jpg",
-        "images/bg9.jpg", "images/bg10.jpg", "images/bg11.jpg", "images/bg12.jpg",
-        "images/bg13.jpg", "images/bg14.jpg", "images/bg15.jpg", "images/bg16.jpg",
-        "images/bg17.jpg", "images/bg18.jpg", "images/bg19.jpg", "images/bg20.jpg",
-        "images/bg21.jpg", "images/bg22.jpg", "images/bg23.jpg", "images/bg24.jpg",
-        "images/bg25.jpg", "images/bg26.jpg", "images/bg27.jpg", "images/bg28.jpg",
-        "images/bg29.jpg", "images/bg30.jpg", "images/bg31.jpg", "images/bg32.jpg",
-        "images/bg33.jpg", "images/bg34.jpg", "images/bg35.jpg", "images/bg36.jpg",
-        "images/bg37.jpg", "images/bg38.jpg", "images/bg39.jpg", "images/bg40.jpg",
-        "images/bg41.jpg", "images/bg42.jpg", "images/bg43.jpg", "images/bg44.jpg",
-        "images/bg45.jpg", "images/bg46.jpg", "images/bg47.jpg", "images/bg48.jpg",
-        "images/bg49.jpg", "images/bg50.jpg", "images/bg51.jpg", "images/bg52.jpg",
-        "images/bg53.jpg", "images/bg54.jpg", "images/bg55.jpg", "images/bg56.jpg",
-        "images/bg57.jpg", "images/bg58.jpg", "images/bg59.jpg", "images/bg60.jpg",
-        "images/bg61.jpg", "images/bg62.jpg", "images/bg63.jpg", "images/bg64.jpg",
-        "images/bg65.jpg", "images/bg66.jpg", "images/bg67.jpg", "images/bg68.jpg",
-        "images/bg69.jpg", "images/bg70.jpg", "images/bg71.jpg", "images/bg72.jpg",
-        "images/bg73.jpg", "images/bg74.jpg",
-    ]
+    const totalBackgrounds = 109
+    const backgrounds = Array.from({ length: totalBackgrounds }, (_, i) => `images/bg${i + 1}.jpg`)
 
     function applyBackground(index) {
-        document.body.style.backgroundImage = `url(${backgrounds[index]})`
+        if (!backgrounds[index]) index = 0
+        document.body.style.backgroundImage = `url("${backgrounds[index]}")`
         localStorage.setItem("bgIndex", String(index))
         localStorage.setItem("bgTime", String(Date.now()))
     }
@@ -489,6 +471,10 @@ document.addEventListener("DOMContentLoaded", function () {
             timerElapsed = currentElapsed()
             timerRunning = false
             timerStartedAt = 0
+            if (timerTick) {
+                clearInterval(timerTick)
+                timerTick = null
+            }
         } else if (timerOverlay && !timerOverlay.hidden) {
             timerRunning = true
             timerStartedAt = Date.now()
